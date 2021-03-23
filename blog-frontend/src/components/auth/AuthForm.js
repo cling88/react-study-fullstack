@@ -56,7 +56,7 @@ const AuthForm = ({type, onChange, onSubmit, form}) => {
         <AuthFormBlock>
             <h3>{text}</h3>
             <form onSubmit={onSubmit}>
-                <StyledInput authCoomplete="username" name="username" placeholder="아이디" onChange={onChange} value={form.username} />
+                <StyledInput autoComplete="username" name="username" placeholder="아이디" onChange={onChange} value={form.username} />
                 <StyledInput
                     autoComplete="new-password"
                     name="password"

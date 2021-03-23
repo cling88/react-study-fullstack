@@ -1,24 +1,40 @@
 import { createAction, handleActions } from 'redux-actions'
 import produce from 'immer'
+import { takeLatest } from 'redux-saga/effects'
+import MiddlewareSaga, { createRequestActionTypes } from '../lib/MiddlewareSaga'
+import * as authAPI from '../lib/api/auth'
 
 const CHANGE_FIELD = 'auth/CHANGE_FIELD';
 const INITIALIZE_FORM = 'auth/INITIALIZE_FORM';
+const [REGISTER, REGISTER_SUCCESS, REGISTER_FAILURE] = createRequestActionTypes('auth/REGISTER');
+const [LOGIN, LOGIN_SUCCESS, LOGIN_FAILURE] = createRequestActionTypes('auth/LOGIN');
 
-// actions
-export const changeField = createAction(
-    CHANGE_FIELD,
-    ({form, key, value}) => ({
-        form, // register || login
-        key,  // username || password || passwordConfirm
-        value
-    })
-)
+export const changeField = createAction(CHANGE_FIELD, ({form, key, value}) => ({
+    form, 
+    key,
+    value
+}))
 export const initializeForm = createAction(INITIALIZE_FORM, form => form);
+export const register = createAction(REGISTER, ({username, password}) => ({
+    username,
+    password
+}))
+export const login = createAction(LOGIN, ({username, password}) => ({
+    username,
+    password
+}))
 
 
-// state
+// Saga
+const registerSaga = MiddlewareSaga(REGISTER, authAPI.register);
+const loginSaga = MiddlewareSaga(LOGIN, authAPI.login)
+export function* authSaga(){
+    yield takeLatest(REGISTER, registerSaga);
+    yield takeLatest(LOGIN, loginSaga)
+}
+
 const initialState = {
-    register : {
+    register: {
         username: '',
         password: '',
         passwordConfirm: ''
@@ -26,25 +42,38 @@ const initialState = {
     login: {
         username: '',
         password: ''
-    }
+    },
+    auth: null,
+    authError: null
 }
 
 const auth = handleActions({
-    [CHANGE_FIELD]: (state, { payload: {form, key, value} }) => 
-        produce(state, draft => {
-            draft[form][key] = value; // EX) state.register.username 
-        }),
-    [INITIALIZE_FORM]: (state, {payload: form}) => 
-        ({
-            ...state,
-            [form]: initialState[form]
-        })
-}, initialState);
-
-// export const sampleAction = createAction(SAMPLE_ACTION);
-// const initialState = {}
-// const auth = handleActions({
-//     [SAMPLE_ACTION]: (state, action) => state,
-// }, initialState)
+    [CHANGE_FIELD]: (state, {payload: {form, key, value}}) => produce(state, draft => {
+        draft[form][key]= value
+    }),
+    [INITIALIZE_FORM]: (state, {payload: form}) => ({
+        ...state,
+        [form]: initialState[form],
+        authError: null
+    }),
+    [REGISTER_SUCCESS]: (state, {payload: auth}) => ({
+        ...state,
+        authError: null,
+        auth: auth
+    }),
+    [REGISTER_FAILURE]: (state, {payload: error}) => ({
+        ...state,
+        authError: error
+    }),
+    [LOGIN_SUCCESS]: (state, {payload: auth}) => ({
+        ...state,
+        authError: null,
+        auth: auth
+    }),
+    [LOGIN_FAILURE]: (state, {payload: error}) => ({
+        ...state,
+        authError: error
+    })
+}, initialState)
 
 export default auth;

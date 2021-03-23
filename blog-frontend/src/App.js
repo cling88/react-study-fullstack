@@ -7,7 +7,10 @@ style
 
 redux 
 - yarn add redux react-redux redux-actions immer redux-devtools-extension
+- yarn add redux-saga
 
+api 
+- yarn add axios
 */
 import { Route } from 'react-router-dom'
 

@@ -85,7 +85,7 @@ export const login = async ctx => {
 export const check = async ctx => {
     const { user } = ctx.state;
     if(!user) {
-        ctx.statu = 401;
+        ctx.status = 401;
         return;
     }
     ctx.body = user;
