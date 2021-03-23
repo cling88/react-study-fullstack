@@ -4,6 +4,13 @@ import { Link } from 'react-router-dom'
 import palette from '../../lib/styles/palette'
 import Button from '../common/Button'
 
+const ErrorMessage = styled.div`
+    color: red;
+    text-align: center;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+`
+
 const AuthFormBlock = styled.div`
     h3 {
         margin: 0; 
@@ -49,7 +56,7 @@ const textMap = {
     register: '회원가입'
 }
 
-const AuthForm = ({type, onChange, onSubmit, form}) => {
+const AuthForm = ({type, onChange, onSubmit, form, error}) => {
     const text = textMap[type];
 
     return (
@@ -76,6 +83,9 @@ const AuthForm = ({type, onChange, onSubmit, form}) => {
                             value={form.passwordConfirm}
                         />
                     )
+                }
+                { 
+                    error && <ErrorMessage>{ error }</ErrorMessage>
                 }
                 <LoginButton cyan fullWidth >{text}</LoginButton>
             </form>
