@@ -16,7 +16,7 @@ ETC
 - yarn add --dev nodemon
 - yarn add esm   // import, export 를 사용하도록 도와줌 (아직 실험적 단계)
 - yarn add joi   // 스키마의 유효성 검증 
-
+- yarn add koa-static // front/build 디렉터리 안에 파일을 사용할 수 있도록 정적 파일 제공 기능 
 
 */
 
@@ -29,6 +29,11 @@ import koa from 'koa'
 import Router from 'koa-router'
 import bodyParser from 'koa-bodyparser'
 import mongoose from 'mongoose'
+
+// 정적파일 제공
+import serve from 'koa-static'
+import path from 'path'
+import send from 'koa-send'
 
 const { PORT, MONGO_URI } = process.env;
 import api from './api'
@@ -57,6 +62,15 @@ app.use(bodyParser());
 app.use(jwtMiddleware)
 
 app.use(router.routes()).use(router.allowedMethods()); // app 인스턴스에 라우터 적용
+
+const buildDirectory = path.resolve(__dirname, '../../blog-frontend/build');
+app.use(serve(buildDirectory))
+app.use(async ctx => {
+    // Not Found 이고 주소가 /api 로 시작하지 않는 경우
+    if(ctx.status === 404 && ctx.path.indexOf('/api') !== 0) {
+        await send(ctx, index.html, { root:buildDirectory })
+    }
+})
 
 const port = PORT || 4000;
 app.listen(port, () => {
