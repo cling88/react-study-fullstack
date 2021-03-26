@@ -17,7 +17,8 @@ export default function MiddlewareSaga(type, request) {
             const response = yield call(request, action.payload);
             yield put({
                 type: SUCCESS,
-                payload: response.data
+                payload: response.data,
+                meta: response // pagination 때문에 추가 - 헤더에 정보 추가 
             })
         }catch(e) {
             yield put({

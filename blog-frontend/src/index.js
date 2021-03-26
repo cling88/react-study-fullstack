@@ -15,6 +15,9 @@ import createSagaMiddleware from 'redux-saga'
 import rootReducer, { rootSaga } from './redux'
 import { tempSetUser, check } from './redux/user'
 
+// 검색엔진 설정
+import { HelmetProvider } from 'react-helmet-async'
+
 const sagaMiddleware = createSagaMiddleware();
 const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(sagaMiddleware)));
 /*
@@ -38,7 +41,9 @@ loadUser(); // 반드시 sagaMiddleware.run(rootSaga) 가 호출된 이후 호�
 ReactDOM.render(
   <Provider store={store}>
     <BrowserRouter>
-      <App />
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
     </BrowserRouter>
   </Provider>,
   document.getElementById('root')

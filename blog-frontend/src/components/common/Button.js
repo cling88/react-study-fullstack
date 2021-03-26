@@ -33,17 +33,20 @@ const StyledButton = styled.button`
             }
         `
     }
+    &:disabled {
+        background: ${palette.gray[3]};
+        color: ${palette.gray[5]};
+        cursor: not-allowed;
+    }
 `
 
 const Button = ({ to, history, ...rest }) => {
     const onClick = e => {
         console.log("onClick")
         if(to) {
-            console.log("onClick has to", to)
             history.push(to)
         }
         if(rest.onClick) {
-            console.log("onClick no has to")
             rest.onClick(e);
         }
     }

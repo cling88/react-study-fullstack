@@ -1,8 +1,18 @@
 import Post from '../../models/post'
 import mongoose from 'mongoose'
 import Joi from 'joi'
-
+import sanitizeHtml from 'sanitize-html'
 const { ObjectId } = mongoose.Types;
+
+const sanitizeOption = {
+    allowedTags: ['h1', 'h2', 'b', 'i', 'u', 's', 'p','ul', 'ol', 'li', 'blockquote', 'a', 'img'],
+    allowedAttributes: {
+        a: ['href', 'name', 'target'],
+        img: ['src'],
+        li: ['class']
+    },
+    allowedSchemes: ['data', 'http']
+}
 
 // export const checkObjectId = (ctx, next) => {  // 권한 확인을 위한 미들웨어 
 //     const { id } = ctx.params; 
@@ -50,7 +60,8 @@ export const write = async ctx => {
     const { title, body, tags } = ctx.request.body;
     const post = new Post({
         title,
-        body,
+        // body,
+        body: sanitizeHtml(body, sanitizeOption),
         tags,
         user: ctx.state.user
     })
@@ -66,6 +77,14 @@ export const write = async ctx => {
 /*
     GET  /api/posts?username=&tag=&page=
 */
+// quill 에서 생성된 html 태그 제거 
+const removeHTML = body => {
+    const filtered = sanitizeHtml(body, {
+        allowedTags: []
+    });
+    return filtered.length < 200 ? filtered: `${filtered.slice(0, 200)}...`
+}
+
 export const list = async ctx => {
     const page = parseInt(ctx.query.page || '1', 10); 
     if(page < 1) {
@@ -90,7 +109,8 @@ export const list = async ctx => {
         .map(post => post.toJSON())
         .map(post => ({
             ...post,
-            body: post.body.length < 200 ? post.body : `${post.body.slice(0, 200)}...`
+            body: removeHTML(post.body)
+            // body: post.body.length < 200 ? post.body : `${post.body.slice(0, 200)}...`
         }));
     } catch(e) {
         ctx.throw(500, e);
@@ -148,10 +168,16 @@ export const update = async ctx => {
         ctx.body = result.error;
         return;
     }
-    
-    
+
+    // html 필터링 
+    const nextData = {...ctx.request.body}; 
+    if(nextData.body) {
+        nextData.body = removeHTML(nextData.body, sanitizeOption);
+    }
+
     try {
-        const post = await Post.findByIdAndUpdate(id, ctx.request.body, {
+        // const post = await Post.findByIdAndUpdate(id, ctx.request.body, {
+        const post = await Post.findByIdAndUpdate(id, nextData, {
             new: true  // true면 업데이트 이후의 데이터 반환 false 면 업데이트 전의 데이터 반환
         }).exec()
         if(!post) {
